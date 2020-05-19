@@ -11,6 +11,7 @@ public class Global
     public static bool canJump = false;
     public static bool canJump2 = false;
     public static bool isJump = false;
+    public static bool stopPlayer = false; // for doing animation to next scene
     public static float jumpInterval = 1f;
     public static float jumpTime = 0.2f;
     public static float jumpForce = 30;
