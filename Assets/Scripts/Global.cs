@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class Global
 {
-    public static float walkSpeed = 2f;
-    public static float lieSpeed = 1f;
-    public static float sprintSpeed = 3.5f;
+    public static float walkSpeed = 1.7f;
+    public static float lieSpeed = 0.8f;
+    public static float sprintSpeed = 2.8f;
     public static bool canJump = false;
     public static bool canJump2 = false;
     public static bool isJump = false;

@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviour
     private GameObject coffee;
     private bool openPortal = false;
     private bool removeBody = false;
+    private int countCollider = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -40,23 +41,23 @@ public class PlayerMovement : MonoBehaviour
                 //GetComponent<Rigidbody2D>().velocity = Vector2.zero;
                 removeBody = true;
             }
-            if (endCount > 4.7)
+            if (endCount > 5)
             {
                 portal.transform.localScale = new Vector2(portal.transform.localScale.x * 0.97f, portal.transform.localScale.y * 0.97f);
             }
-            if (endCount >= 4)
+            if (endCount >= 4.3)
             {
                 //portal.transform.localScale = new Vector2(2,2);
                 ani.SetBool("Drink", false);
                 if (transform.rotation.y == 0)
                 {
-                    transform.Rotate(new Vector3(0, 0, -7), Space.Self);
+                    transform.Rotate(new Vector3(0, 0, -6), Space.Self);
                 }
                 else
                 {
-                    transform.Rotate(new Vector3(0, 0, 7), Space.Self);
+                    transform.Rotate(new Vector3(0, 0, 6), Space.Self);
                 }
-                transform.localScale = new Vector2(transform.localScale.x * 0.97f, transform.localScale.y * 0.97f);
+                transform.localScale = new Vector2(transform.localScale.x * 0.975f, transform.localScale.y * 0.975f);
             }
             else if (endCount >= 3.2)
             {
@@ -107,21 +108,20 @@ public class PlayerMovement : MonoBehaviour
             }
             //End of normal left and right movement
 
-            if (Input.GetKey(KeyCode.UpArrow))
+            if (Input.GetKeyDown(KeyCode.UpArrow))
             {
-
                 if (Global.canJump)
                 {
-                    //Debug.Log("first jump");
+                    //Debug.Log("first jump"+countCollider);
                     GetComponent<Rigidbody2D>().velocity = Vector2.up * Global.jumpSpeed;
                     //GetComponent<ConstantForce2D>().force = new Vector2(0, Global.jumpForce);
                     Global.canJump = false;
                     Global.isJump = true;
                     ani.SetBool("Jump", true);
                 }
-                else if (Global.canJump2 && movePattern > 3)
+                else if ((Global.canJump2 )&& movePattern > 3)
                 {
-                    //Debug.Log("second jump");
+                    //Debug.Log("second jump"+countCollider);
                     Global.canJump2 = false;
                     GetComponent<Rigidbody2D>().velocity = Vector2.up * Global.jumpSpeed;
                     ani.SetBool("Jump", true);
@@ -150,15 +150,15 @@ public class PlayerMovement : MonoBehaviour
                 ani.SetBool("LieStatic", false);
             }
 
-            if (Input.GetKeyUp(KeyCode.UpArrow))
+            if (Input.GetKeyUp(KeyCode.UpArrow)&&Global.isJump)
             {
                 //GetComponent<ConstantForce2D>().force = new Vector2(0, 0);
                 GetComponent<Rigidbody2D>().velocity = Vector2.up * -1;
-                if (Global.isJump)
-                {
-                    Global.canJump2 = true;
-                    Global.isJump = false; //but might still in the air
-                }
+                
+                //Debug.Log("can double");
+                Global.canJump2 = true;
+                Global.isJump = false; //but might still in the air
+                
             }
 
             if (!Input.anyKey)
@@ -176,6 +176,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (collision.collider.tag == "Wall")
         {
+            countCollider++;
             Vector2 dir = collision.contacts[0].point - new Vector2(transform.position.x, transform.position.y);
             //dir = -dir.normalized;
             //Debug.Log(dir);
@@ -186,6 +187,20 @@ public class PlayerMovement : MonoBehaviour
                 Global.canJump2 = false;
                 Global.isJump = false;
                 ani.SetBool("Jump", false);
+            }
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.collider.tag == "Wall")
+        {
+            countCollider--;
+            if (countCollider == 0)
+            {
+                //Debug.Log("can air");
+                Global.canJump = false;
+                Global.canJump2 = true;
             }
         }
     }
@@ -208,7 +223,15 @@ public class PlayerMovement : MonoBehaviour
     IEnumerator nextScene()
     {
         yield return new WaitForSeconds(6);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        if (SceneManager.GetActiveScene().buildIndex==0)
+        {
+            SceneManager.LoadScene(1);
+        }
+        else
+        {
+            SceneManager.LoadScene(0);
+        }
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
     private void doMovement(int angle, int multipler)
