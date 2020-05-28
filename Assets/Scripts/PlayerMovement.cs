@@ -14,6 +14,13 @@ public class PlayerMovement : MonoBehaviour
     private bool openPortal = false;
     private bool removeBody = false;
     private int countCollider = 0;
+    private bool finishFadeout = false;
+    private SpriteRenderer black;
+    private bool iceLeft = false;
+    private bool iceRight = false;
+    private bool showMovement;
+    private SpriteRenderer movement;
+    
 
     // Start is called before the first frame update
     void Start()
@@ -21,11 +28,25 @@ public class PlayerMovement : MonoBehaviour
         portalPrefab = Resources.Load("Portal") as GameObject;
         Global.stopPlayer = false;
         coffee = GameObject.FindGameObjectWithTag("Coffee");
+        black = GameObject.Find("Black").GetComponent<SpriteRenderer>();
+        if (GameObject.Find("Movement"))
+        {
+            showMovement = true;
+            movement = GameObject.Find("Movement").GetComponent<SpriteRenderer>();
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (Time.timeSinceLevelLoad > 5 && showMovement)
+        {
+            movement.color = new Vector4(1, 1, 1, movement.color.a - 0.01f);
+            if(movement.color.a <= 0)
+            {
+                showMovement = false;
+            }
+        }
         if (Global.stopPlayer)
         {
             foreach (AnimatorControllerParameter parameter in ani.parameters)
@@ -40,6 +61,18 @@ public class PlayerMovement : MonoBehaviour
                 //GetComponent<Rigidbody2D>().gravityScale = 0;
                 //GetComponent<Rigidbody2D>().velocity = Vector2.zero;
                 removeBody = true;
+            }
+            if (endCount>=6&&!finishFadeout)
+            {
+                //Debug.Log(black.color.a);
+                if (black.color.a < 1)
+                {
+                    black.color = new Vector4(0, 0, 0, black.color.a + 0.01f);
+                }
+                else
+                {
+                    finishFadeout = true;
+                }
             }
             if (endCount > 5)
             {
@@ -58,6 +91,7 @@ public class PlayerMovement : MonoBehaviour
                     transform.Rotate(new Vector3(0, 0, 6), Space.Self);
                 }
                 transform.localScale = new Vector2(transform.localScale.x * 0.975f, transform.localScale.y * 0.975f);
+                
             }
             else if (endCount >= 3.2)
             {
@@ -85,10 +119,6 @@ public class PlayerMovement : MonoBehaviour
                 coffee.transform.position = new Vector2((transform.position.x - coffee.transform.position.x) > 0 ? coffee.transform.position.x + 0.005f : coffee.transform.position.x - 0.005f, (transform.position.y - coffee.transform.position.y) > 0 ? coffee.transform.position.y + 0.005f : coffee.transform.position.y - 0.005f);
                 coffee.transform.localScale = new Vector2(coffee.transform.localScale.x * 0.985f, coffee.transform.localScale.y * 0.985f);
             }
-            //else
-            //{
-            //    coffee.GetComponent<Animator>().enabled = false;
-            //}
         }
         else
         {
@@ -96,10 +126,24 @@ public class PlayerMovement : MonoBehaviour
             if (Input.GetKey(KeyCode.LeftArrow))
             {
                 doMovement(180, -1);
+                if (movePattern == 3)
+                {
+                    //rb2d.AddForce(new Vector2(moveSpeed, 0), ForceMode2D.Impulse);
+                    //GetComponent<Rigidbody2D>().AddForce(Vector2.left, ForceMode2D.Impulse);
+                    iceLeft = true;
+                    iceRight = false;
+                }
             }
             else if (Input.GetKey(KeyCode.RightArrow))
             {
                 doMovement(0, 1);
+
+                if (movePattern == 3)
+                {
+                    //GetComponent<Rigidbody2D>().AddForce(Vector2.right, ForceMode2D.Impulse);
+                    iceLeft = false;
+                    iceRight = true;
+                }
             }
             else
             {
@@ -172,6 +216,18 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    private void FixedUpdate()
+    {
+        if (iceLeft && !Global.stopPlayer)
+        {
+            GetComponent<Rigidbody2D>().AddForce(new Vector2(-0.2f, 0), ForceMode2D.Impulse);
+        }
+        else if (iceRight && !Global.stopPlayer)
+        {
+            GetComponent<Rigidbody2D>().AddForce(new Vector2(0.2f, 0), ForceMode2D.Impulse);
+        }
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.collider.tag == "Wall")
@@ -183,11 +239,19 @@ public class PlayerMovement : MonoBehaviour
             //Calculating collision angle, player only can jump when it stands on the ground
             if (dir.y <= Global.climbThreshold)
             {
+                //Debug.Log("can jump"+dir);
                 Global.canJump = true;
                 Global.canJump2 = false;
                 Global.isJump = false;
                 ani.SetBool("Jump", false);
+                ani.SetBool("Idle", true);
             }
+        }
+        if (collision.collider.tag == "Spike")
+        {
+            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            transform.position = GameObject.FindGameObjectWithTag("Check").transform.position;
+
         }
     }
 
@@ -218,20 +282,25 @@ public class PlayerMovement : MonoBehaviour
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             transform.position = GameObject.FindGameObjectWithTag("Check").transform.position;
         }
+        if (collision.tag == "Fireball"&&!Global.stopPlayer)
+        {
+            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            transform.position = GameObject.FindGameObjectWithTag("Check").transform.position;
+        }
     }
 
     IEnumerator nextScene()
     {
-        yield return new WaitForSeconds(6);
-        if (SceneManager.GetActiveScene().buildIndex==0)
-        {
-            SceneManager.LoadScene(1);
+        yield return new WaitForSeconds(7.6f);
+
+        if (SceneManager.GetActiveScene().buildIndex+1!=SceneManager.sceneCountInBuildSettings) {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
         else
         {
             SceneManager.LoadScene(0);
         }
-        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        
     }
 
     private void doMovement(int angle, int multipler)

@@ -60,8 +60,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Fade.cs" />
+    <Compile Include="Assets\Scripts\FireBall.cs" />
+    <Compile Include="Assets\Scripts\FireBallManager.cs" />
     <Compile Include="Assets\Scripts\Global.cs" />
+    <Compile Include="Assets\Scripts\LoadScene.cs" />
     <Compile Include="Assets\Scripts\PlayerMovement.cs" />
+    <Compile Include="Assets\Scripts\Stone.cs" />
+    <Compile Include="Assets\Scripts\Wind.cs" />
+    <Compile Include="Assets\Scripts\WindArea.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>F:/Unity Project/CoffeeRunner/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

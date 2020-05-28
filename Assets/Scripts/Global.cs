@@ -21,4 +21,5 @@ public class Global
     public static Vector2 normalSize = new Vector2(0.5f, 1.48f);
     public static Vector2 lieOffset = new Vector2(0,-0.37f);
     public static Vector2 lieSize = new Vector2(0.5f, 0.74f);
+    //public static bool fadeout = false;
 }
